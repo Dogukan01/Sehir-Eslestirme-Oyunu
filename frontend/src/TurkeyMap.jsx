@@ -75,7 +75,7 @@ function TurkeyMap({
         strokeColor = '#ffffff';
         cursorStyle = 'pointer';
       } else {
-        if (gameState === 'playing') {
+        if (gameState === 'playing' && gameMode !== 'random') {
           cursorStyle = 'pointer';
         }
       }
@@ -88,8 +88,8 @@ function TurkeyMap({
         path.style.cursor = cursorStyle;
       });
 
-      // Hover olayları (Sadece oyun oynanırken ve şehir bulunmamışken)
-      if (gameState === 'playing' && !isFound) {
+      // Hover olayları (Sadece oyun oynanırken, şehir bulunmamışken ve rastgele modda değilken)
+      if (gameState === 'playing' && !isFound && gameMode !== 'random') {
         group.onmouseenter = () => {
           paths.forEach(path => {
             path.style.fill = '#3b82f6'; // Hover durumunda Mavi renk

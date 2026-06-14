@@ -178,8 +178,8 @@ function App() {
         setFlashState('incorrect');
         setTimeout(() => setFlashState(null), 300);
       }
-    } else {
-      // Sıralı veya Rastgele Modu: Tablodan/Haritadan tıklanan numarayı aktif hedef yap
+    } else if (gameMode === 'sequential') {
+      // Sıralı Modu: Tablodan/Haritadan tıklanan numarayı aktif hedef yap
       const clickedCity = allCities.find(c => c.plate === plate);
       const isAlreadyFound = foundCities.some(c => c.plate === plate);
 
@@ -374,7 +374,7 @@ function App() {
                 } else {
                   cellClass += " cell-empty";
                   // Tıklanabilir olduğunu göstermek için oyun oynanırken imleç pointer olacak
-                  if (gameState === 'playing' && gameMode !== 'map') {
+                  if (gameState === 'playing' && gameMode === 'sequential') {
                     cellClass += " cell-clickable";
                   }
                   displayText = "";
@@ -385,7 +385,7 @@ function App() {
                     key={cityObj.plate} 
                     className={cellClass}
                     onClick={() => handleGridCellClick(cityObj)}
-                    title={gameState === 'playing' && gameMode !== 'map' && !isFound ? `${cityObj.plate} nolu plakayı seç` : ''}
+                    title={gameState === 'playing' && gameMode === 'sequential' && !isFound ? `${cityObj.plate} nolu plakayı seç` : ''}
                   >
                     <span className="cell-plate">{cityObj.plate}</span>
                     <span className="cell-name">{displayText}</span>
