@@ -108,12 +108,12 @@ function App() {
     const fetchCities = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5001/api/cities');
+        const response = await axios.get('/cities.json');
         setAllCities(response.data);
         setError(null);
       } catch (err) {
         console.error("Şehir verileri çekilemedi:", err);
-        setError("API sunucusuna bağlanılamadı. Lütfen backend'in çalıştığından ve 5001 portunun açık olduğundan emin olun.");
+        setError("Şehir verileri yüklenemedi. Lütfen sayfayı yenilemeyi veya internet bağlantınızı kontrol etmeyi deneyin.");
       } finally {
         setLoading(false);
       }
