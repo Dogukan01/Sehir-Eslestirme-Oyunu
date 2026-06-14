@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { normalizeText } from './utils/normalization';
+import TurkeyMap from './TurkeyMap';
 import './index.css';
 
 function App() {
@@ -8,11 +9,12 @@ function App() {
   const [unfoundCities, setUnfoundCities] = useState([]);
   const [foundCities, setFoundCities] = useState([]);
   const [currentPlateTarget, setCurrentPlateTarget] = useState(null);
-
+  
   const [inputValue, setInputValue] = useState('');
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes (300 seconds)
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [gameState, setGameState] = useState('idle'); // 'idle' | 'playing' | 'finished'
-  const [flashAnimation, setFlashAnimation] = useState(false);
+  const [gameMode, setGameMode] = useState('sequential'); // 'sequential' | 'random' | 'map'
+  const [flashState, setFlashState] = useState(null); // null | 'correct' | 'incorrect'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -56,12 +58,21 @@ function App() {
     setTimeLeft(300); // 5 minutes
     setGameState('playing');
     setInputValue('');
-    pickRandomPlate([...allCities]);
-
-    // Auto focus on input after starting
-    setTimeout(() => {
-      if (inputRef.current) inputRef.current.focus();
-    }, 100);
+    
+    // Mod seçimine göre başlangıç hedefini belirle
+    if (gameMode === 'sequential') {
+      setCurrentPlateTarget(allCities[0]);
+    } else {
+      // Rastgele mod veya Harita eşleştirme modu
+      pickRandomPlate([...allCities]);
+    }
+    
+    // Auto focus on input after starting (harita modunda input olmadığı için fokuslama yapma)
+    if (gameMode !== 'map') {
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
+    }
   };
 
   const endGame = () => {
@@ -75,17 +86,50 @@ function App() {
     setCurrentPlateTarget(pool[randomIndex]);
   };
 
-  // 3. Handle input changes and instant check
+  // Doğru cevap verildiğinde ortak tetiklenecek fonksiyon
+  const handleCorrectAnswer = (target = currentPlateTarget, currentFound = foundCities, currentUnfound = unfoundCities) => {
+    // Animasyonu tetikle
+    setFlashState('correct');
+    setTimeout(() => setFlashState(null), 300);
+
+    // Skoru artır, bulunanlara ekle
+    const newFoundCities = [target, ...currentFound];
+    setFoundCities(newFoundCities);
+
+    // Kalan şehirlerden çıkar
+    const remainingCities = currentUnfound.filter(c => c.plate !== target.plate);
+    setUnfoundCities(remainingCities);
+
+    // Inputu temizle
+    setInputValue('');
+
+    if (remainingCities.length === 0) {
+      // Tüm iller bulundu!
+      endGame();
+    } else {
+      // Yeni bir plaka seç
+      if (gameMode === 'sequential') {
+        // Sıralı modda bir sonraki bulunmamış plakayı bul
+        const nextSequential = allCities.find(c => !newFoundCities.some(fc => fc.plate === c.plate));
+        setCurrentPlateTarget(nextSequential);
+      } else {
+        // Rastgele veya Harita modunda yeni rastgele seç
+        pickRandomPlate(remainingCities);
+      }
+    }
+  };
+
+  // 3. Handle input changes and instant check (for sequential & random mode)
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
 
-    if (gameState !== 'playing' || !currentPlateTarget) return;
+    if (gameState !== 'playing' || !currentPlateTarget || gameMode === 'map') return;
 
     const normalizedInput = normalizeText(value);
     const normalizedTarget = normalizeText(currentPlateTarget.city);
 
-    // Alternatif kabul listesi (Büyük-küçük harften ve Türkçe karakterlerden arındırılmış halleri)
+    // Alternatif kabul listesi
     const synonyms = {
       "mersin": ["icel"],
       "afyonkarahisar": ["afyon"],
@@ -97,39 +141,15 @@ function App() {
       "hatay": ["antakya"]
     };
 
-    const isMatch = normalizedInput === normalizedTarget ||
-      (synonyms[normalizedTarget] && synonyms[normalizedTarget].includes(normalizedInput));
+    const isMatch = normalizedInput === normalizedTarget || 
+                    (synonyms[normalizedTarget] && synonyms[normalizedTarget].includes(normalizedInput));
 
-    // Anlık kontrol: eşleşme var mı?
     if (isMatch) {
-      // Doğru cevap!
-
-      // Animasyonu tetikle
-      setFlashAnimation(true);
-      setTimeout(() => setFlashAnimation(false), 300);
-
-      // Skoru artır, bulunanlara ekle
-      const newFoundCities = [currentPlateTarget, ...foundCities];
-      setFoundCities(newFoundCities);
-
-      // Kalan şehirlerden çıkar
-      const remainingCities = unfoundCities.filter(c => c.plate !== currentPlateTarget.plate);
-      setUnfoundCities(remainingCities);
-
-      // Inputu temizle
-      setInputValue('');
-
-      if (remainingCities.length === 0) {
-        // Tüm iller bulundu!
-        endGame();
-      } else {
-        // Yeni bir plaka seç
-        pickRandomPlate(remainingCities);
-      }
+      handleCorrectAnswer();
     }
   };
 
-  // Pas geçme fonksiyonu
+  // Pas geçme fonksiyonu (Rastgele veya Harita modunda kullanılabilir)
   const passCity = () => {
     if (unfoundCities.length > 1) {
       let nextTarget;
@@ -138,11 +158,55 @@ function App() {
         const randomIndex = Math.floor(Math.random() * unfoundCities.length);
         nextTarget = unfoundCities[randomIndex];
       } while (nextTarget.plate === currentPlateTarget.plate);
-
+      
       setCurrentPlateTarget(nextTarget);
       setInputValue('');
-      if (inputRef.current) inputRef.current.focus();
+      if (gameMode !== 'map' && inputRef.current) inputRef.current.focus();
     }
+  };
+
+  // Haritadan bir şehre tıklandığında tetiklenen fonksiyon
+  const handleMapCityClick = (plate, cityName) => {
+    if (gameState !== 'playing') return;
+
+    if (gameMode === 'map') {
+      // Harita Eşleştirme Modu: Tıklanan şehir doğru plaka mı?
+      if (plate === currentPlateTarget.plate) {
+        handleCorrectAnswer();
+      } else {
+        // Hatalı tıklandıysa kırmızı flash animasyonu tetikle
+        setFlashState('incorrect');
+        setTimeout(() => setFlashState(null), 300);
+      }
+    } else {
+      // Sıralı veya Rastgele Modu: Tablodan/Haritadan tıklanan numarayı aktif hedef yap
+      const clickedCity = allCities.find(c => c.plate === plate);
+      const isAlreadyFound = foundCities.some(c => c.plate === plate);
+
+      if (clickedCity && !isAlreadyFound) {
+        setCurrentPlateTarget(clickedCity);
+        setInputValue('');
+        setTimeout(() => {
+          if (inputRef.current) inputRef.current.focus();
+        }, 50);
+      }
+    }
+  };
+
+  // Grid hücresine tıklandığında tetiklenen fonksiyon
+  const handleGridCellClick = (cityObj) => {
+    if (gameState !== 'playing' || gameMode !== 'sequential') return;
+
+    // Zaten bulunmuşsa tıklanamaz
+    const isAlreadyFound = foundCities.some(c => c.plate === cityObj.plate);
+    if (isAlreadyFound) return;
+
+    // Aktif hedef yap
+    setCurrentPlateTarget(cityObj);
+    setInputValue('');
+    setTimeout(() => {
+      if (inputRef.current) inputRef.current.focus();
+    }, 50);
   };
 
   // Format time (MM:SS)
@@ -155,14 +219,20 @@ function App() {
   return (
     <div className="app-container">
       <header className="header">
-        <h1>Plaka Eşleştirme Oyunu</h1>
-        <p>81 ili ne kadar hızlı bulabilirsin?</p>
+        <div className="header-logo-container">
+          <div className="header-plate-logo">
+            <span className="logo-tr">TR</span>
+            <span className="logo-number">81</span>
+          </div>
+          <h1>PlakaTahmin</h1>
+        </div>
+        <p>Türkiye Şehir - Plaka Eşleştirme Oyunu</p>
       </header>
 
       <main className="main-content">
         {/* Game Area */}
-        <section className={`game-card ${flashAnimation ? 'flash-correct' : ''}`}>
-
+        <section className={`game-card ${flashState === 'correct' ? 'flash-correct' : flashState === 'incorrect' ? 'flash-incorrect' : ''}`}>
+          
           <div className="stats-row">
             <div className="stat-box timer">
               <span>Süre</span>
@@ -184,7 +254,35 @@ function App() {
             </div>
           ) : gameState === 'idle' && (
             <div className="center-action">
-              <button className="btn-primary" onClick={startGame}>Oyuna Başla</button>
+              <div className="mode-selector-container">
+                <p className="mode-title">Oyun Modunu Seçin:</p>
+                <div className="mode-buttons">
+                  <button 
+                    className={`btn-mode ${gameMode === 'sequential' ? 'active' : ''}`}
+                    onClick={() => setGameMode('sequential')}
+                  >
+                    Sıralı Mod (01 - 81)
+                  </button>
+                  <button 
+                    className={`btn-mode ${gameMode === 'random' ? 'active' : ''}`}
+                    onClick={() => setGameMode('random')}
+                  >
+                    Rastgele Mod
+                  </button>
+                  <button 
+                    className={`btn-mode ${gameMode === 'map' ? 'active' : ''}`}
+                    onClick={() => setGameMode('map')}
+                  >
+                    Harita Eşleştirme
+                  </button>
+                </div>
+                <div className="mode-info">
+                  {gameMode === 'sequential' && "01'den başlayarak sırayla tahmin edin. İstediğiniz plakaya tablodan/haritadan tıklayarak da geçiş yapabilirsiniz."}
+                  {gameMode === 'random' && "Rastgele gelen plakaları tahmin edin. Zorlandıklarınızı pas geçip sonra yanıtlayabilirsiniz."}
+                  {gameMode === 'map' && "Gelen plakanın hangi ile ait olduğunu harita üzerinden bulup üzerine tıklayın!"}
+                </div>
+              </div>
+              <button className="btn-primary" onClick={startGame} style={{ marginTop: '1.5rem' }}>Oyuna Başla</button>
             </div>
           )}
 
@@ -194,68 +292,109 @@ function App() {
                 <span className="tr-badge">TR</span>
                 <span className="plate-number">{currentPlateTarget.plate}</span>
               </div>
-              <div className="input-group">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className="city-input"
-                  placeholder="Şehir adı giriniz..."
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  autoFocus
-                  autoComplete="off"
-                />
-                <div className="button-group">
-                  {unfoundCities.length > 1 && (
+              
+              {gameMode === 'map' ? (
+                <div className="map-mode-hint">
+                  <p>Bu plaka koduna sahip şehri <strong>harita üzerinde tıklayarak</strong> bulun!</p>
+                  <div className="button-group" style={{ marginTop: '1rem' }}>
                     <button className="btn-secondary" onClick={passCity} title="Bu şehri atla">Pas Geç</button>
-                  )}
-                  <button className="btn-danger" onClick={endGame} title="Oyunu bitir ve sonuçları gör">Oyunu Bitir</button>
+                    <button className="btn-danger" onClick={endGame} title="Oyunu bitir ve sonuçları gör">Oyunu Bitir</button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="input-group">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="city-input"
+                    placeholder="Şehir adı giriniz..."
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  <div className="button-group">
+                    {unfoundCities.length > 1 && (
+                      <button className="btn-secondary" onClick={passCity} title="Bu şehri atla">Pas Geç</button>
+                    )}
+                    <button className="btn-danger" onClick={endGame} title="Oyunu bitir ve sonuçları gör">Oyunu Bitir</button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {gameState === 'finished' && (
             <div className="center-action end-screen">
-              <h2>Süre Doldu!</h2>
-              <p>Toplam Skor: {foundCities.length} / {allCities.length}</p>
+              <h2>Oyun Bitti!</h2>
+              <p>Mod: {gameMode === 'sequential' ? 'Sıralı Mod' : gameMode === 'random' ? 'Rastgele Mod' : 'Harita Eşleştirme'}</p>
+              <p className="final-score">Toplam Skor: {foundCities.length} / {allCities.length}</p>
               <button className="btn-primary" onClick={startGame}>Tekrar Oyna</button>
+              <button className="btn-secondary" onClick={() => setGameState('idle')} style={{ marginTop: '0.5rem' }}>Ana Menüye Dön</button>
             </div>
           )}
         </section>
 
+        {/* Turkey SVG Map Section (Oyun/Bitiş Durumunda Gösterilir) */}
+        {(!loading && !error && (gameState === 'playing' || gameState === 'finished')) && (
+          <section className="map-section">
+            <h3>Türkiye Haritası</h3>
+            <TurkeyMap 
+              gameState={gameState}
+              foundCities={foundCities}
+              currentPlateTarget={currentPlateTarget}
+              onCityClick={handleMapCityClick}
+              gameMode={gameMode}
+            />
+          </section>
+        )}
+
         {/* Fixed Cities Grid Table */}
-        <section className="grid-section">
-          <h3>Şehir Tablosu ({foundCities.length} / {allCities.length})</h3>
-          <div className="cities-grid">
-            {allCities.map(cityObj => {
-              // Şehir bulundu mu?
-              const isFound = foundCities.some(c => c.plate === cityObj.plate);
-              const isGameFinished = gameState === 'finished';
+        {!loading && !error && (
+          <section className="grid-section">
+            <h3>Şehir Tablosu ({foundCities.length} / {allCities.length})</h3>
+            <div className="cities-grid">
+              {allCities.map(cityObj => {
+                const isFound = foundCities.some(c => c.plate === cityObj.plate);
+                const isActive = currentPlateTarget && currentPlateTarget.plate === cityObj.plate && gameState === 'playing';
+                const isGameFinished = gameState === 'finished';
 
-              let cellClass = "grid-cell";
-              let displayText = "";
+                let cellClass = "grid-cell";
+                let displayText = "";
 
-              if (isFound) {
-                cellClass += " cell-found";
-                displayText = cityObj.city.toUpperCase();
-              } else if (isGameFinished) {
-                cellClass += " cell-missed";
-                displayText = cityObj.city.toUpperCase();
-              } else {
-                cellClass += " cell-empty";
-                displayText = ""; // Boş bırak
-              }
+                if (isFound) {
+                  cellClass += " cell-found";
+                  displayText = cityObj.city.toUpperCase();
+                } else if (isGameFinished) {
+                  cellClass += " cell-missed";
+                  displayText = cityObj.city.toUpperCase();
+                } else if (isActive) {
+                  cellClass += " cell-active";
+                  displayText = "?";
+                } else {
+                  cellClass += " cell-empty";
+                  // Tıklanabilir olduğunu göstermek için oyun oynanırken imleç pointer olacak
+                  if (gameState === 'playing' && gameMode !== 'map') {
+                    cellClass += " cell-clickable";
+                  }
+                  displayText = "";
+                }
 
-              return (
-                <div key={cityObj.plate} className={cellClass}>
-                  <span className="cell-plate">{cityObj.plate}</span>
-                  <span className="cell-name">{displayText}</span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                return (
+                  <div 
+                    key={cityObj.plate} 
+                    className={cellClass}
+                    onClick={() => handleGridCellClick(cityObj)}
+                    title={gameState === 'playing' && gameMode !== 'map' && !isFound ? `${cityObj.plate} nolu plakayı seç` : ''}
+                  >
+                    <span className="cell-plate">{cityObj.plate}</span>
+                    <span className="cell-name">{displayText}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
