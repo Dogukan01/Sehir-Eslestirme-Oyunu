@@ -240,6 +240,35 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-danger {
+  background: var(--error);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.3);
+  font-family: inherit;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
 /* Grid Table CSS */
 .grid-section {
   background: var(--card-bg);
@@ -249,6 +278,7 @@ body {
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  margin-top: 3rem; /* Spacing between input area and grid table */
 }
 
 .grid-section h3 {
@@ -260,7 +290,7 @@ body {
 
 .cities-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  grid-template-columns: repeat(5, 1fr); /* Exactly 5 items per row */
   gap: 0.5rem;
 }
 

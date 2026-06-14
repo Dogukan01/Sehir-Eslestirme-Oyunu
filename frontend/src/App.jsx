@@ -85,8 +85,21 @@ function App() {
     const normalizedInput = normalizeText(value);
     const normalizedTarget = normalizeText(currentPlateTarget.city);
 
+    // Alternatif kabul listesi (Büyük-küçük harften ve Türkçe karakterlerden arındırılmış halleri)
+    const synonyms = {
+      "mersin": ["icel"],
+      "afyonkarahisar": ["afyon"],
+      "sanliurfa": ["urfa"],
+      "kahramanmaras": ["maras"],
+      "kocaeli": ["izmit"],
+      "sakarya": ["adapazari"]
+    };
+
+    const isMatch = normalizedInput === normalizedTarget || 
+                    (synonyms[normalizedTarget] && synonyms[normalizedTarget].includes(normalizedInput));
+
     // Anlık kontrol: eşleşme var mı?
-    if (normalizedInput === normalizedTarget) {
+    if (isMatch) {
       // Doğru cevap!
       
       // Animasyonu tetikle
@@ -190,9 +203,12 @@ function App() {
                   autoFocus
                   autoComplete="off"
                 />
-                {unfoundCities.length > 1 && (
-                  <button className="btn-secondary" onClick={passCity} title="Bu şehri atla">Pas Geç</button>
-                )}
+                <div className="button-group">
+                  {unfoundCities.length > 1 && (
+                    <button className="btn-secondary" onClick={passCity} title="Bu şehri atla">Pas Geç</button>
+                  )}
+                  <button className="btn-danger" onClick={endGame} title="Oyunu bitir ve sonuçları gör">Oyunu Bitir</button>
+                </div>
               </div>
             </div>
           )}
