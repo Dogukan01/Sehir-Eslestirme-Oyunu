@@ -8,7 +8,7 @@ function App() {
   const [unfoundCities, setUnfoundCities] = useState([]);
   const [foundCities, setFoundCities] = useState([]);
   const [currentPlateTarget, setCurrentPlateTarget] = useState(null);
-  
+
   const [inputValue, setInputValue] = useState('');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes (300 seconds)
   const [gameState, setGameState] = useState('idle'); // 'idle' | 'playing' | 'finished'
@@ -57,10 +57,10 @@ function App() {
     setGameState('playing');
     setInputValue('');
     pickRandomPlate([...allCities]);
-    
+
     // Auto focus on input after starting
     setTimeout(() => {
-      if(inputRef.current) inputRef.current.focus();
+      if (inputRef.current) inputRef.current.focus();
     }, 100);
   };
 
@@ -92,16 +92,18 @@ function App() {
       "sanliurfa": ["urfa"],
       "kahramanmaras": ["maras"],
       "kocaeli": ["izmit"],
-      "sakarya": ["adapazari"]
+      "sakarya": ["adapazari"],
+      "gaziantep": ["antep"],
+      "hatay": ["antakya"]
     };
 
-    const isMatch = normalizedInput === normalizedTarget || 
-                    (synonyms[normalizedTarget] && synonyms[normalizedTarget].includes(normalizedInput));
+    const isMatch = normalizedInput === normalizedTarget ||
+      (synonyms[normalizedTarget] && synonyms[normalizedTarget].includes(normalizedInput));
 
     // Anlık kontrol: eşleşme var mı?
     if (isMatch) {
       // Doğru cevap!
-      
+
       // Animasyonu tetikle
       setFlashAnimation(true);
       setTimeout(() => setFlashAnimation(false), 300);
@@ -136,10 +138,10 @@ function App() {
         const randomIndex = Math.floor(Math.random() * unfoundCities.length);
         nextTarget = unfoundCities[randomIndex];
       } while (nextTarget.plate === currentPlateTarget.plate);
-      
+
       setCurrentPlateTarget(nextTarget);
       setInputValue('');
-      if(inputRef.current) inputRef.current.focus();
+      if (inputRef.current) inputRef.current.focus();
     }
   };
 
@@ -160,7 +162,7 @@ function App() {
       <main className="main-content">
         {/* Game Area */}
         <section className={`game-card ${flashAnimation ? 'flash-correct' : ''}`}>
-          
+
           <div className="stats-row">
             <div className="stat-box timer">
               <span>Süre</span>
