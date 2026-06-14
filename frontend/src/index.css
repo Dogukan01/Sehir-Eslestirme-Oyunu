@@ -51,6 +51,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  position: relative;
 }
 
 .header {
@@ -614,4 +615,332 @@ body {
 
 #kibris {
   display: none !important;
+}
+
+/* Header Controls & Icons */
+.header-controls {
+  position: absolute;
+  top: 2rem;
+  right: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  z-index: 10;
+}
+
+@media (max-width: 600px) {
+  .header-controls {
+    position: static;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Modal Overlay & Content */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.modal-content {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 650px;
+  max-height: 90vh; /* Cihaz yüksekliğine göre sığacak maksimum sınır */
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  position: relative;
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column; /* Header ve body'yi dikey sırala */
+}
+
+.modal-body {
+  overflow-y: auto; /* Taşma durumunda modal içinde dikey kaydırma */
+  padding-right: 0.5rem;
+  margin-top: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Chrome, Safari ve Edge için kaydırma çubuğu özelleştirme */
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.75rem;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 550px) {
+  .leaderboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leaderboard-item {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  transition: border-color 0.2s;
+}
+
+.leaderboard-item:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.item-title {
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.item-stats p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+}
+
+.item-stats strong {
+  color: var(--text-primary);
+}
+
+.item-date {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.no-record {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Hints System */
+.btn-hint {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-hint:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.hint-display {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+  padding: 0.75rem 1.5rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease-out;
+  max-width: 450px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Regions Stats Section */
+.regions-section {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.regions-section h3 {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  align-self: flex-start;
+}
+
+.regions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 950px) {
+  .regions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .regions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.region-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.region-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.region-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.region-name {
+  color: var(--text-primary);
+}
+
+.region-count {
+  color: var(--text-secondary);
+}
+
+.region-progress-bar-bg {
+  background: rgba(255, 255, 255, 0.05);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.region-progress-bar-fill {
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Change color to green when region is completed */
+.region-card:has(.region-progress-bar-fill[style="width: 100%;"]) .region-progress-bar-fill {
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+}
+
+.region-percent {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  align-self: flex-end;
+}
+
+/* Modal Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
