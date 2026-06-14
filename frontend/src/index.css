@@ -240,52 +240,88 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Lists Container */
-.lists-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.list-box {
+/* Grid Table CSS */
+.grid-section {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.list-box h3 {
-  font-size: 1.125rem;
+.grid-section h3 {
+  font-size: 1.25rem;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
-  font-weight: 600;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
+.cities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 0.5rem;
 }
 
-.chip {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid transparent;
+.grid-cell {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.cell-plate {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.cell-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 0.1rem;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.grid-cell.cell-found {
+  background: var(--success-bg);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--success);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
   animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.chip.success {
-  background: var(--success-bg);
+.grid-cell.cell-found .cell-plate {
   color: var(--success);
-  border-color: rgba(16, 185, 129, 0.3);
 }
 
-.chip.error {
+.grid-cell.cell-missed {
   background: var(--error-bg);
+  border-color: rgba(239, 68, 68, 0.4);
   color: var(--error);
-  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.grid-cell.cell-missed .cell-plate {
+  color: var(--error);
+}
+
+.grid-cell.cell-empty {
+  opacity: 0.6;
 }
 
 /* Animations */

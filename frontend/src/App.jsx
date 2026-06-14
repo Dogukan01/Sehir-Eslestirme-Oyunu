@@ -10,7 +10,7 @@ function App() {
   const [currentPlateTarget, setCurrentPlateTarget] = useState(null);
   
   const [inputValue, setInputValue] = useState('');
-  const [timeLeft, setTimeLeft] = useState(180); // 3 minutes
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes (300 seconds)
   const [gameState, setGameState] = useState('idle'); // 'idle' | 'playing' | 'finished'
   const [flashAnimation, setFlashAnimation] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ function App() {
   const startGame = () => {
     setFoundCities([]);
     setUnfoundCities([...allCities]);
-    setTimeLeft(180); // 3 minutes
+    setTimeLeft(300); // 5 minutes
     setGameState('playing');
     setInputValue('');
     pickRandomPlate([...allCities]);
@@ -206,31 +206,37 @@ function App() {
           )}
         </section>
 
-        {/* Found Cities & Missed Cities Summary */}
-        <section className="lists-container">
-          <div className="list-box found-list">
-            <h3>Bulunan Şehirler ({foundCities.length})</h3>
-            <div className="chips">
-              {foundCities.map(c => (
-                <span key={c.plate} className="chip success">
-                  {c.plate} - {c.city.toUpperCase()}
-                </span>
-              ))}
-            </div>
-          </div>
+        {/* Fixed Cities Grid Table */}
+        <section className="grid-section">
+          <h3>Şehir Tablosu ({foundCities.length} / {allCities.length})</h3>
+          <div className="cities-grid">
+            {allCities.map(cityObj => {
+              // Şehir bulundu mu?
+              const isFound = foundCities.some(c => c.plate === cityObj.plate);
+              const isGameFinished = gameState === 'finished';
 
-          {gameState === 'finished' && unfoundCities.length > 0 && (
-            <div className="list-box missed-list">
-              <h3>Bulunamayan Şehirler ({unfoundCities.length})</h3>
-              <div className="chips">
-                {unfoundCities.map(c => (
-                  <span key={c.plate} className="chip error">
-                    {c.plate} - {c.city.toUpperCase()}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+              let cellClass = "grid-cell";
+              let displayText = "";
+
+              if (isFound) {
+                cellClass += " cell-found";
+                displayText = cityObj.city.toUpperCase();
+              } else if (isGameFinished) {
+                cellClass += " cell-missed";
+                displayText = cityObj.city.toUpperCase();
+              } else {
+                cellClass += " cell-empty";
+                displayText = ""; // Boş bırak
+              }
+
+              return (
+                <div key={cityObj.plate} className={cellClass}>
+                  <span className="cell-plate">{cityObj.plate}</span>
+                  <span className="cell-name">{displayText}</span>
+                </div>
+              );
+            })}
+          </div>
         </section>
       </main>
     </div>
