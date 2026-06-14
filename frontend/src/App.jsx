@@ -108,7 +108,7 @@ function App() {
     const fetchCities = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/cities.json');
+        const response = await axios.get(`${import.meta.env.BASE_URL}cities.json`);
         setAllCities(response.data);
         setError(null);
       } catch (err) {

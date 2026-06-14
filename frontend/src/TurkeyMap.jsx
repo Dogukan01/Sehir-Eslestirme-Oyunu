@@ -19,7 +19,7 @@ function TurkeyMap({
 
   // 1. SVG Harita Dosyasını Yükle
   useEffect(() => {
-    fetch('/turkiye.svg')
+    fetch(`${import.meta.env.BASE_URL}turkiye.svg`)
       .then(res => {
         if (!res.ok) throw new Error('SVG haritası yüklenemedi.');
         return res.text();
